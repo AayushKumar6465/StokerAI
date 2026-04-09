@@ -1,16 +1,18 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useApp } from "../context/AppContext";
 
 export default function AuthPage() {
-  const { login } = useApp();
+  const { login, token } = useApp();
   const [loading, setLoading] = useState(false);
   const [authView, setAuthView] = useState("signin"); // "signin" | "signup" | "forgot"
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  if (token) return <Navigate to="/chat" replace />;
 
   const handleSubmit = async (e) => {
     e.preventDefault();

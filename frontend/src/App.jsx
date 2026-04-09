@@ -7,8 +7,14 @@ import SettingsPage from "./pages/SettingsPage";
 import { AppProvider, useApp } from "./context/AppContext";
 
 function ProtectedRoute({ children }) {
-  const { token } = useApp();
-  if (!token) return <Navigate to="/auth" />;
+  const { token, user } = useApp();
+
+  const storedToken = localStorage.getItem('token');
+
+  if (!storedToken && !token) {
+    return <Navigate to="/auth" replace />;
+  }
+  
   return children;
 }
 
