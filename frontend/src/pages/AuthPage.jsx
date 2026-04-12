@@ -5,14 +5,22 @@ import toast from "react-hot-toast";
 import { useApp } from "../context/AppContext";
 
 export default function AuthPage() {
-  const { login, token } = useApp();
+  const { login, user, isLoadingAuth } = useApp();
   const [loading, setLoading] = useState(false);
   const [authView, setAuthView] = useState("signin"); // "signin" | "signup" | "forgot"
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  if (token) return <Navigate to="/chat" replace />;
+  if (isLoadingAuth) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin"></div>
+      </div>
+    );
+  }
+
+  if (user) return <Navigate to="/chat" replace />;
 
   const handleSubmit = async (e) => {
     e.preventDefault();

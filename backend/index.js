@@ -2,6 +2,7 @@ import express from "express";
 import "dotenv/config";
 import cors from "cors";
 import connectDB from "./configs/db.js";
+import mongoose from "mongoose";
 
 import userRoutes from "./routes/userRoutes.js";
 import chatRoutes from "./routes/chatRoutes.js";
@@ -42,3 +43,19 @@ const startServer = async () => {
 };
 
 startServer();
+
+// Handle graceful shutdowns so nodemon restarts don't exhaust MongoDB connections
+process.on('SIGINT', async () => {
+  await mongoose.connection.close();
+  process.exit(0);
+});
+
+process.on('SIGTERM', async () => {
+  await mongoose.connection.close();
+  process.exit(0);
+});
+
+process.once('SIGUSR2', async () => {
+  await mongoose.connection.close();
+  process.kill(process.pid, 'SIGUSR2');
+});

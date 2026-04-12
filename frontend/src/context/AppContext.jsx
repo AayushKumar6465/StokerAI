@@ -11,29 +11,38 @@ export const AppProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem('token') || '');
   const [chats, setChats] = useState([]);
   const [selectedChatId, setSelectedChatId] = useState(null);
+  const [isLoadingAuth, setIsLoadingAuth] = useState(!!localStorage.getItem('token'));
 
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      fetchUserData();
-      fetchChats();
-    } else {
-      delete axios.defaults.headers.common['Authorization'];
-    }
-  }, [token]);
-
-  const fetchUserData = async () => {
-    try {
-      const { data } = await axios.get('/api/user/data');
-      if (data.success) {
-        setUser(data.user);
+    const initializeAuth = async () => {
+      if (token) {
+        setIsLoadingAuth(true);
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        try {
+          const { data } = await axios.get('/api/user/data');
+          if (data.success) {
+            setUser(data.user);
+            await fetchChats();
+          } else {
+            handleLogout();
+          }
+        } catch (error) {
+          console.error('Error fetching user data:', error);
+          handleLogout();
+        } finally {
+          setIsLoadingAuth(false);
+        }
+      } else {
+        delete axios.defaults.headers.common['Authorization'];
+        setUser(null);
+        setIsLoadingAuth(false);
       }
-    } catch (error) {
-      console.error('Error fetching user data:', error);
-    }
-  };
+    };
+
+    initializeAuth();
+  }, [token]);
 
   const fetchChats = async () => {
     try {
@@ -46,6 +55,14 @@ export const AppProvider = ({ children }) => {
     }
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setToken('');
+    setUser(null);
+    setChats([]);
+    delete axios.defaults.headers.common['Authorization'];
+  };
+
   const login = (newToken, newUser) => {
     localStorage.setItem('token', newToken);
     setToken(newToken);
@@ -55,10 +72,7 @@ export const AppProvider = ({ children }) => {
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
-    setToken('');
-    setUser(null);
-    setChats([]);
+    handleLogout();
     navigate('/auth');
   };
 
@@ -68,7 +82,7 @@ export const AppProvider = ({ children }) => {
       token, setToken,
       chats, setChats,
       selectedChatId, setSelectedChatId,
-      fetchUserData,
+      isLoadingAuth,
       fetchChats,
       login,
       logout

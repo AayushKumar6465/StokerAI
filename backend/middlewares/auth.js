@@ -5,13 +5,13 @@ const authMiddleware = async (req, res, next) => {
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.json({ success: false, message: "Unauthorized" });
+      return res.status(401).json({ success: false, message: "Unauthorized" });
     }
 
     const token = authHeader.split(" ")[1];
 
     if (!token) {
-      return res.json({ success: false, message: "Unauthorized" });
+      return res.status(401).json({ success: false, message: "Unauthorized" });
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -19,7 +19,7 @@ const authMiddleware = async (req, res, next) => {
 
     next();
   } catch (error) {
-    return res.json({ success: false, message: "Unauthorized" });
+    return res.status(401).json({ success: false, message: "Unauthorized" });
   }
 };
 
