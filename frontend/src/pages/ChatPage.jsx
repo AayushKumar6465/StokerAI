@@ -44,53 +44,70 @@ export default function ChatPage() {
   };
 
   const handleSend = async (text) => {
-    let activeChatId = currentChatId;
-
-    if (!activeChatId) {
-      try {
+    try {
+      if (!currentChatId) {
         const { data } = await axios.get("/api/chat/create");
         if (data.success && data.chat) {
-          activeChatId = data.chat._id;
-          setCurrentChatId(activeChatId);
-          navigate(`/chat/${activeChatId}`);
+          const newChatId = data.chat._id;
+          setCurrentChatId(newChatId);
+          setMessages((prev) => [
+            ...prev,
+            { role: "user", content: text, type: "text" },
+          ]);
+          setLoading(true);
+
+          const res = await axios.post("/api/message/text", {
+            chatId: newChatId,
+            prompt: text,
+          });
+
+          if (res.data.success) {
+            setMessages((prev) => [
+              ...prev,
+              {
+                role: "assistant",
+                content: res.data.response,
+                type: "text",
+              },
+            ]);
+            fetchChats();
+            navigate(`/chat/${newChatId}`, { replace: true });
+          } else {
+            toast.error("Failed to get response");
+          }
+          setLoading(false);
         } else {
           toast.error("Failed to create session");
-          return;
         }
-      } catch (error) {
-        toast.error("Failed to create session");
-        return;
-      }
-    }
-
-    setMessages((prev) => [
-      ...prev,
-      { role: "user", content: text, timestamp: "" },
-    ]);
-    setLoading(true);
-
-    try {
-      const { data } = await axios.post("/api/message/text", {
-        chatId: activeChatId,
-        prompt: text,
-      });
-
-      if (data.success) {
+      } else {
         setMessages((prev) => [
           ...prev,
-          {
-            role: "assistant",
-            content: data.message,
-            timestamp: "",
-          },
+          { role: "user", content: text, type: "text" },
         ]);
-        fetchChats();
-      } else {
-        toast.error("Failed to get response");
+        setLoading(true);
+
+        const { data } = await axios.post("/api/message/text", {
+          chatId: currentChatId,
+          prompt: text,
+        });
+
+        if (data.success) {
+          setMessages((prev) => [
+            ...prev,
+            {
+              role: "assistant",
+              content: data.response,
+              type: "text",
+            },
+          ]);
+          fetchChats();
+        } else {
+          toast.error("Failed to get response");
+        }
+        setLoading(false);
       }
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to send message");
-    } finally {
       setLoading(false);
     }
   };

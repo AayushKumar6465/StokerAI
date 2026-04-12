@@ -1,12 +1,17 @@
 import { useState } from "react";
 
-export default function ChatInput({ onSend }) {
+export default function ChatInput({ onSend, onSendImage }) {
   const [message, setMessage] = useState("");
+  const [isImageMode, setIsImageMode] = useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (message.trim()) {
-      onSend?.(message);
+      if (isImageMode) {
+        onSendImage?.(message);
+      } else {
+        onSend?.(message);
+      }
       setMessage("");
     }
   };
@@ -29,7 +34,7 @@ export default function ChatInput({ onSend }) {
                 handleSubmit(e);
               }
             }}
-            placeholder="Message StokerAI..."
+            placeholder={isImageMode ? "Describe an image to generate..." : "Message StokerAI..."}
             rows={1}
             className="flex-1 bg-transparent text-on-surface text-[15px] placeholder:text-on-surface-variant/40 resize-none min-h-[24px] max-h-[120px]"
             style={{ lineHeight: "1.5" }}
@@ -84,7 +89,12 @@ export default function ChatInput({ onSend }) {
             {/* Image */}
             <button
               type="button"
-              className="w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant/50 hover:bg-surface-container hover:text-on-surface transition-colors"
+              onClick={() => setIsImageMode(!isImageMode)}
+              className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
+                isImageMode
+                  ? "bg-primary/20 text-primary border border-primary/30"
+                  : "text-on-surface-variant/50 hover:bg-surface-container hover:text-on-surface"
+              }`}
               aria-label="Generate image"
             >
               <svg

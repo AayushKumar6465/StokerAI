@@ -1,13 +1,7 @@
 import openai from "../configs/openai.js";
 import Chat from "../models/Chat.js";
 import User from "../models/User.js";
-import ImageKit from "imagekit";
-
-const imagekit = new ImageKit({
-  publicKey: process.env.IMAGEKIT_PUBLIC_KEY,
-  privateKey: process.env.IMAGEKIT_PRIVATE_KEY,
-  urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT,
-});
+import imagekit from "../configs/imagekit.js";
 
 export const generateText = async (req, res) => {
   try {
@@ -43,7 +37,7 @@ export const generateText = async (req, res) => {
 
     // 6. Call OpenAI
     const completion = await openai.chat.completions.create({
-      model: "gemini-2.0-flash",
+      model: "llama-3.3-70b-versatile",
       messages: history,
     });
 
