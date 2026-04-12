@@ -1,10 +1,5 @@
-import { Link, useLocation } from "react-router-dom";
-
-const recentSessions = [
-  "Quantum Physics Breakdown",
-  "NextJs API Routing Logic",
-  "Marketing Copy for FinTech",
-];
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useApp } from "../context/AppContext";
 
 const navItems = [
   {
@@ -76,6 +71,8 @@ const navItems = [
 
 export default function Sidebar() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { chats, logout, user } = useApp();
 
   return (
     <aside
@@ -100,8 +97,8 @@ export default function Sidebar() {
 
       {/* Start New Session */}
       <div className="px-4 mb-5">
-        <Link
-          to="/chat"
+        <button
+          onClick={() => navigate("/chat")}
           className="w-full flex items-center justify-center whitespace-nowrap shrink-0 gap-2 py-2.5 rounded-full gradient-cta text-sm font-semibold shadow-[0_0_25px_rgba(182,160,255,0.12)]"
         >
           <svg
@@ -119,7 +116,7 @@ export default function Sidebar() {
             />
           </svg>
           Start New Session
-        </Link>
+        </button>
       </div>
 
       {/* Navigation */}
@@ -155,12 +152,13 @@ export default function Sidebar() {
           Recent Sessions
         </p>
         <div className="space-y-0.5">
-          {recentSessions.map((session) => (
+          {chats?.slice(0, 10).map((chat) => (
             <button
-              key={session}
+              key={chat._id}
+              onClick={() => navigate("/chat/" + chat._id)}
               className="w-full text-left px-3 py-2 rounded-xl text-[13px] text-on-surface-variant/50 hover:bg-surface-container/40 hover:text-on-surface/70 transition-all duration-200 truncate"
             >
-              {session}
+              {chat.title || "New Chat"}
             </button>
           ))}
         </div>
@@ -202,13 +200,16 @@ export default function Sidebar() {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-[13px] font-medium text-on-surface/80 truncate">
-              Stoker Pro
+              {user?.name || "Stoker Pro"}
             </p>
             <p className="text-[10px] text-on-surface-variant/35 truncate">
-              intelligence@stoker.ai
+              {user?.email || "intelligence@stoker.ai"}
             </p>
           </div>
-          <button className="text-on-surface-variant/30 hover:text-on-surface/60 transition-colors">
+          <button
+            onClick={logout}
+            className="text-on-surface-variant/30 hover:text-on-surface/60 transition-colors"
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="w-4 h-4"

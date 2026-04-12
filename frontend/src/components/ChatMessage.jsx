@@ -1,3 +1,5 @@
+import ReactMarkdown from "react-markdown";
+
 export default function ChatMessage({
   role,
   content,
@@ -29,9 +31,9 @@ export default function ChatMessage({
 
         {/* Text Content */}
         <div
-          className={`text-[15px] leading-[1.7] ${isUser ? "text-on-surface" : "text-on-surface-variant"}`}
+          className={`text-[15px] leading-[1.7] ${isUser ? "text-on-surface" : "text-on-surface-variant markdown-body"}`}
         >
-          {content}
+          {isUser ? content : <ReactMarkdown>{content}</ReactMarkdown>}
         </div>
 
         {/* Code Blocks */}
