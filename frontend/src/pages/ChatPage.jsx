@@ -112,6 +112,52 @@ export default function ChatPage() {
     }
   };
 
+  const handleSendImage = async (text) => {
+    try {
+      let chatId = currentChatId;
+
+      // Pehle chatId lo
+      if (!chatId) {
+        const { data } = await axios.get("/api/chat/create");
+        if (!data.success) return toast.error("Failed to create session");
+        chatId = data.chat._id;
+        setCurrentChatId(chatId);
+      }
+
+      // User message add karo
+      setMessages((prev) => [
+        ...prev,
+        { role: "user", content: text, type: "text" },
+      ]);
+      setLoading(true);
+
+      // Ab image generate karo
+      const res = await axios.post("/api/message/image", {
+        chatId: chatId,
+        prompt: text,
+      });
+
+      if (res.data.success) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content: res.data.imageUrl,
+            type: "image",
+          },
+        ]);
+        fetchChats();
+        navigate("/chat/" + chatId, { replace: true });
+      } else {
+        toast.error(res.data.message || "Image generation failed");
+      }
+      setLoading(false);
+    } catch (error) {
+      toast.error("Failed to generate image");
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="h-screen flex bg-background" id="chat-page">
       <Sidebar />
@@ -154,15 +200,25 @@ export default function ChatPage() {
               </div>
             ) : (
               <div className="w-full flex-1 mt-auto">
-                {messages.map((msg, idx) => (
-                  <ChatMessage
-                    key={idx}
-                    role={msg.role}
-                    content={msg.content}
-                    timestamp={msg.timestamp}
-                    codeBlocks={msg.codeBlocks || []}
-                  />
-                ))}
+                {messages.map((msg, idx) =>
+                  msg.type === "image" ? (
+                    <div key={idx} className="flex justify-start mb-6">
+                      <img
+                        src={msg.content}
+                        alt="Generated"
+                        className="rounded-xl max-w-sm"
+                      />
+                    </div>
+                  ) : (
+                    <ChatMessage
+                      key={idx}
+                      role={msg.role}
+                      content={msg.content}
+                      timestamp={msg.timestamp}
+                      codeBlocks={msg.codeBlocks || []}
+                    />
+                  ),
+                )}
 
                 {loading && (
                   <div className="flex justify-start mb-6 animate-fade-in">
@@ -197,7 +253,7 @@ export default function ChatPage() {
         </div>
 
         {/* Chat Input */}
-        <ChatInput onSend={handleSend} />
+        <ChatInput onSend={handleSend} onSendImage={handleSendImage} />
       </main>
     </div>
   );
