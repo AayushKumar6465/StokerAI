@@ -73,7 +73,8 @@ export default function ChatPage() {
             fetchChats();
             navigate(`/chat/${newChatId}`, { replace: true });
           } else {
-            toast.error("Failed to get response");
+            setMessages((prev) => prev.slice(0, -1));
+            toast.error(res.data.message || "Failed to get response");
           }
           setLoading(false);
         } else {
@@ -102,11 +103,13 @@ export default function ChatPage() {
           ]);
           fetchChats();
         } else {
-          toast.error("Failed to get response");
+          setMessages((prev) => prev.slice(0, -1));
+          toast.error(data.message || "Failed to get response");
         }
         setLoading(false);
       }
     } catch (error) {
+      setMessages((prev) => prev.slice(0, -1));
       toast.error(error.response?.data?.message || "Failed to send message");
       setLoading(false);
     }
@@ -149,10 +152,12 @@ export default function ChatPage() {
         fetchChats();
         navigate("/chat/" + chatId, { replace: true });
       } else {
+        setMessages((prev) => prev.slice(0, -1));
         toast.error(res.data.message || "Image generation failed");
       }
       setLoading(false);
     } catch (error) {
+      setMessages((prev) => prev.slice(0, -1));
       toast.error("Failed to generate image");
       setLoading(false);
     }
